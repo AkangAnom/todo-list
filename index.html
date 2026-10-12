@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi To-Do List Saya</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .todo-card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .btn-add {
+            padding: 10px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-add:hover {
+            background-color: #27ae60;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background-color: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #3498db;
+        }
+
+        /* Style jika tugas selesai dikerjakan */
+        li.selesai span {
+            text-decoration: line-through;
+            color: #bdc3c7;
+        }
+
+        .actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="todo-card">
+        <h2>📝 Catatan Tugas Saya</h2>
+
+        <div class="input-group">
+            <input type="text" id="tugasInput" placeholder="Ketik tugas baru...">
+            <button class="btn-add" onclick="tambahTugas()">Tambah</button>
+        </div>
+
+        <ul id="daftarTugas">
+            <!-- Tugas baru akan otomatis muncul di sini via JavaScript -->
+        </ul>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        function tambahTugas() {
+            // 1. Ambil teks dari kotak input
+            let input = document.getElementById('tugasInput');
+            let teksTugas = input.value.trim();
+
+            // Cek agar inputan tidak boleh kosong
+            if (teksTugas === "") {
+                alert("Silakan ketik tugasnya terlebih dahulu!");
+                return;
+            }
+
+            // 2. Buat elemen li (list item) baru secara dinamis
+            let li = document.createElement('li');
+
+            li.innerHTML = `
+                <span>${teksTugas}</span>
+                <div class="actions">
+                    <button onclick="tandaiSelesai(this)" title="Tandai Selesai">✅</button>
+                    <button onclick="hapusTugas(this)" title="Hapus">❌</button>
+                </div>
+            `;
+
+            // 3. Masukkan li baru ke dalam ul (daftarTugas)
+            document.getElementById('daftarTugas').appendChild(li);
+
+            // 4. Kosongkan kembali kotak input
+            input.value = "";
+        }
+
+        // Fungsi untuk menandai tugas selesai (mencoret teks)
+        function tandaiSelesai(tombol) {
+            let itemLi = tombol.parentElement.parentElement;
+            itemLi.classList.toggle('selesai');
+        }
+
+        // Fungsi untuk menghapus tugas dari daftar
+        function hapusTugas(tombol) {
+            let itemLi = tombol.parentElement.parentElement;
+            itemLi.remove();
+        }
+    </script>
+
+</body>
+
+</html>
