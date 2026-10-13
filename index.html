@@ -4,26 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi To-Do List Saya</title>
+    <title>Catatan Keuangan Saya</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eef2f3;
+            background-color: #f4f7f6;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
-        .todo-card {
+        .container {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
         }
 
         h2 {
@@ -32,38 +37,114 @@
             text-align: center;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
+        /* Ringkasan Saldo */
+        .summary-box {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        input[type="text"] {
+        .summary-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #bdc3c7;
+        }
+
+        .summary-box .balance {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .inc-exp-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .inc-exp-container>div {
             flex: 1;
+            text-align: center;
+        }
+
+        .money {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .money.plus {
+            color: #2ecc71;
+        }
+
+        .money.minus {
+            color: #e74c3c;
+        }
+
+        /* Form Input */
+        .form-control {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             outline: none;
+            font-size: 14px;
         }
 
-        .btn-add {
-            padding: 10px 15px;
-            background-color: #2ecc71;
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 15px;
+            margin-top: 10px;
         }
 
-        .btn-add:hover {
-            background-color: #27ae60;
+        .btn-submit:hover {
+            background-color: #2980b9;
+        }
+
+        /* Riwayat Transaksi */
+        h3.section-title {
+            color: #2c3e50;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+            font-size: 16px;
         }
 
         ul {
             list-style: none;
             padding: 0;
             margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         li {
@@ -74,122 +155,168 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #3498db;
+            border-right: 5px solid #ccc;
         }
 
-        /* Style jika tugas selesai dikerjakan */
-        li.selesai span {
-            text-decoration: line-through;
-            color: #bdc3c7;
+        li.plus {
+            border-right-color: #2ecc71;
         }
 
-        .actions button {
+        li.minus {
+            border-right-color: #e74c3c;
+        }
+
+        .delete-btn {
             background: none;
             border: none;
+            color: #e74c3c;
             cursor: pointer;
-            font-size: 14px;
-            margin-left: 5px;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            color: #c0392b;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="todo-card">
-        <h2>📝 Catatan Tugas Saya</h2>
+    <div class="container">
+        <h2>💰 Pencatatan Keuangan</h2>
 
-        <div class="input-group">
-            <input type="text" id="tugasInput" placeholder="Ketik tugas baru..." onkeypress="cekEnter(event)">
-            <button class="btn-add" onclick="tambahTugas()">Tambah</button>
+        <!-- Ringkasan Saldo -->
+        <div class="summary-box">
+            <h3>Total Saldo</h3>
+            <p id="saldo" class="balance">Rp 0</p>
+
+            <div class="inc-exp-container">
+                <div>
+                    <span>Pemasukan</span>
+                    <p id="pemasukan" class="money plus">+Rp 0</p>
+                </div>
+                <div>
+                    <span>Pengeluaran</span>
+                    <p id="pengeluaran" class="money minus">-Rp 0</p>
+                </div>
+            </div>
         </div>
 
-        <ul id="daftarTugas">
-            <!-- Tugas baru akan otomatis muncul di sini via JavaScript -->
+        <!-- Form Tambah Transaksi -->
+        <div class="form-control">
+            <label for="keterangan">Keterangan Transaksi</label>
+            <input type="text" id="keterangan" placeholder="Contoh: Gaji, Beli Kopi...">
+        </div>
+
+        <div class="form-control">
+            <label for="jumlah">Jumlah (Rp)</label>
+            <input type="number" id="jumlah" placeholder="Contoh: 50000">
+        </div>
+
+        <div class="form-control">
+            <label for="jenis">Jenis Transaksi</label>
+            <select id="jenis">
+                <option value="pemasukan">Pemasukan (+)</option>
+                <option value="pengeluaran">Pengeluaran (-)</option>
+            </select>
+        </div>
+
+        <button class="btn-submit" onclick="tambahTransaksi()">Tambah Transaksi</button>
+
+        <!-- Daftar Riwayat Transaksi -->
+        <h3 class="section-title">Riwayat Transaksi</h3>
+        <ul id="daftarTransaksi">
+            <!-- Data transaksi akan muncul di sini secara dinamis -->
         </ul>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Jalankan fungsi muat data saat halaman pertama kali dibuka
-        document.addEventListener("DOMContentLoaded", muatDariLocalStorage);
+        // Ambil data transaksi dari LocalStorage jika ada
+        let transaksi = JSON.parse(localStorage.getItem('transaksiKeuangan')) || [];
 
-        function tambahTugas() {
-            let input = document.getElementById('tugasInput');
-            let teksTugas = input.value.trim();
+        // Inisialisasi tampilan awal
+        document.addEventListener('DOMContentLoaded', updateTampilan);
 
-            if (teksTugas === "") {
-                alert("Silakan ketik tugasnya terlebih dahulu!");
+        // Format angka ke mata uang Rupiah
+        function formatRupiah(angka) {
+            return 'Rp ' + angka.toLocaleString('id-ID');
+        }
+
+        function tambahTransaksi() {
+            let ketInput = document.getElementById('keterangan');
+            let jumInput = document.getElementById('jumlah');
+            let jenisInput = document.getElementById('jenis');
+
+            let ket = ketInput.value.trim();
+            let jum = parseFloat(jumInput.value);
+            let jenis = jenisInput.value;
+
+            if (ket === '' || isNaN(jum) || jum <= 0) {
+                alert('Silakan masukkan keterangan dan jumlah nominal yang benar!');
                 return;
             }
 
-            buatElemenTugas(teksTugas, false);
-            input.value = "";
-            simpanKeLocalStorage();
+            let itemTransaksi = {
+                id: Date.now(),
+                keterangan: ket,
+                jumlah: jum,
+                jenis: jenis
+            };
+
+            transaksi.push(itemTransaksi);
+            simpanDanUpdate();
+
+            // Kosongkan input
+            ketInput.value = '';
+            jumInput.value = '';
         }
 
-        // Fitur tambahan: bisa tekan tombol 'Enter' untuk menambah tugas
-        function cekEnter(event) {
-            if (event.key === "Enter") {
-                tambahTugas();
-            }
+        function hapusTransaksi(id) {
+            transaksi = transaksi.filter(t => t.id !== id);
+            simpanDanUpdate();
         }
 
-        // Fungsi pembantu untuk membuat elemen HTML tugas
-        function buatElemenTugas(teks, sudahSelesai) {
-            let li = document.createElement('li');
-            if (sudahSelesai) {
-                li.classList.add('selesai');
-            }
-
-            li.innerHTML = `
-                <span>${teks}</span>
-                <div class="actions">
-                    <button onclick="tandaiSelesai(this)" title="Tandai Selesai">✅</button>
-                    <button onclick="hapusTugas(this)" title="Hapus">❌</button>
-                </div>
-            `;
-
-            document.getElementById('daftarTugas').appendChild(li);
+        function simpanDanUpdate() {
+            localStorage.setItem('transaksiKeuangan', JSON.stringify(transaksi));
+            updateTampilan();
         }
 
-        // Fungsi untuk menandai tugas selesai
-        function tandaiSelesai(tombol) {
-            let itemLi = tombol.parentElement.parentElement;
-            itemLi.classList.toggle('selesai');
-            simpanKeLocalStorage();
-        }
+        function updateTampilan() {
+            let listEl = document.getElementById('daftarTransaksi');
+            listEl.innerHTML = '';
 
-        // Fungsi untuk menghapus tugas
-        function hapusTugas(tombol) {
-            let itemLi = tombol.parentElement.parentElement;
-            itemLi.remove();
-            simpanKeLocalStorage();
-        }
+            let totalPemasukan = 0;
+            let totalPengeluaran = 0;
 
-        // Menyimpan data ke LocalStorage browser
-        function simpanKeLocalStorage() {
-            let listTugas = [];
-            let itemLi = document.querySelectorAll('#daftarTugas li');
+            transaksi.forEach(t => {
+                let li = document.createElement('li');
+                li.classList.add(t.jenis === 'pemasukan' ? 'plus' : 'minus');
 
-            itemLi.forEach(function (li) {
-                listTugas.push({
-                    teks: li.querySelector('span').textContent,
-                    selesai: li.classList.contains('selesai')
-                });
+                let simbol = t.jenis === 'pemasukan' ? '+' : '-';
+
+                li.innerHTML = `
+                    <span>${t.keterangan}</span>
+                    <div>
+                        <strong>${simbol}${formatRupiah(t.jumlah)}</strong>
+                        <button class="delete-btn" onclick="hapusTransaksi(${t.id})" title="Hapus">❌</button>
+                    </div>
+                `;
+
+                listEl.appendChild(li);
+
+                if (t.jenis === 'pemasukan') {
+                    totalPemasukan += t.jumlah;
+                } else {
+                    totalPengeluaran += t.jumlah;
+                }
             });
 
-            localStorage.setItem('tugasSaya', JSON.stringify(listTugas));
-        }
+            let totalSaldo = totalPemasukan - totalPengeluaran;
 
-        // Mengambil data dari LocalStorage saat halaman dimuat
-        function muatDariLocalStorage() {
-            let dataTersimpan = localStorage.getItem('tugasSaya');
-            if (dataTersimpan) {
-                let listTugas = JSON.parse(dataTersimpan);
-                listTugas.forEach(function (tugas) {
-                    buatElemenTugas(tugas.teks, tugas.selesai);
-                });
-            }
+            document.getElementById('saldo').innerText = formatRupiah(totalSaldo);
+            document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
+            document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
         }
     </script>
 
