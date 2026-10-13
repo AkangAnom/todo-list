@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Keuangan Saya</title>
 
-    <!-- Load Chart.js dari CDN resmi -->
+    <!-- Konfigurasi PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+
+    <!-- Load Chart.js dari CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -22,12 +26,12 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
             background-color: #ffffff;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             width: 100%;
@@ -38,13 +42,14 @@
             color: #2c3e50;
             margin-top: 0;
             text-align: center;
+            font-size: 20px;
         }
 
         /* Area Grafik */
         .chart-container {
             position: relative;
-            width: 180px;
-            height: 180px;
+            width: 160px;
+            height: 160px;
             margin: 0 auto 15px auto;
         }
 
@@ -55,12 +60,12 @@
             padding: 15px;
             border-radius: 10px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .summary-box h3 {
             margin: 0 0 5px 0;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #bdc3c7;
@@ -75,8 +80,8 @@
         .inc-exp-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
-            padding-top: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -86,7 +91,7 @@
         }
 
         .money {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             margin-top: 4px;
         }
@@ -99,17 +104,57 @@
             color: #e74c3c;
         }
 
+        /* Batas Anggaran (Budget Limit) */
+        .budget-box {
+            background-color: #ecf0f1;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+
+        .budget-progress {
+            height: 8px;
+            background-color: #bdc3c7;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .budget-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #2ecc71;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .budget-warning {
+            font-size: 11px;
+            color: #e74c3c;
+            margin-top: 4px;
+            display: none;
+            font-weight: bold;
+        }
+
         /* Form Input */
         .form-control {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: bold;
             color: #34495e;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         input[type="text"],
@@ -117,23 +162,23 @@
         input[type="date"],
         select {
             width: 100%;
-            padding: 10px;
+            padding: 8px 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             outline: none;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .btn-submit {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             background-color: #3498db;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
             margin-top: 5px;
             transition: background 0.2s;
         }
@@ -142,31 +187,27 @@
             background-color: #2980b9;
         }
 
-        /* Filter & Header Riwayat */
+        /* Search & Filter Header */
         .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
+            margin-top: 20px;
             margin-bottom: 10px;
             border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 5px;
+            padding-bottom: 8px;
+        }
+
+        .search-filter-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
         }
 
         h3.section-title {
             color: #2c3e50;
             margin: 0;
-            font-size: 16px;
+            font-size: 15px;
         }
 
-        .filter-select {
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-size: 12px;
-            outline: none;
-        }
-
+        /* List Transaksi */
         ul {
             list-style: none;
             padding: 0;
@@ -177,13 +218,13 @@
 
         li {
             background-color: #f8f9fa;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-right: 5px solid #ccc;
+            border-right: 4px solid #ccc;
         }
 
         li.plus {
@@ -194,17 +235,31 @@
             border-right-color: #e74c3c;
         }
 
-        .trans-info small {
+        .trans-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trans-icon {
+            font-size: 18px;
+        }
+
+        .trans-details span {
             display: block;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .trans-details small {
             color: #7f8c8d;
-            font-size: 11px;
-            margin-top: 2px;
+            font-size: 10px;
         }
 
         .trans-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .delete-btn {
@@ -212,11 +267,31 @@
             border: none;
             color: #e74c3c;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
         }
 
-        .delete-btn:hover {
-            color: #c0392b;
+        /* Group Tombol Ekspor/Impor & Reset */
+        .backup-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            background-color: #f0f3f4;
+            color: #34495e;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn-action:hover {
+            background-color: #e2e6e7;
         }
 
         .btn-reset {
@@ -227,9 +302,8 @@
             border: 1px dashed #e74c3c;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            margin-top: 15px;
-            transition: background 0.2s;
+            font-size: 12px;
+            margin-top: 8px;
         }
 
         .btn-reset:hover {
@@ -241,7 +315,7 @@
 <body>
 
     <div class="container">
-        <h2>💰 Pencatatan Keuangan</h2>
+        <h2>💰 Catatan Keuangan</h2>
 
         <!-- Diagram Grafik Lingkaran -->
         <div class="chart-container">
@@ -265,10 +339,25 @@
             </div>
         </div>
 
+        <!-- Batas Anggaran Bulanan -->
+        <div class="budget-box">
+            <div class="budget-header">
+                <span>Batas Pengeluaran</span>
+                <span id="labelTextBatas" onclick="aturBatasAnggaran()"
+                    style="cursor:pointer; color:#3498db; text-decoration:underline;">
+                    Atur Limit
+                </span>
+            </div>
+            <div class="budget-progress">
+                <div id="budgetBar" class="budget-bar"></div>
+            </div>
+            <div id="budgetWarning" class="budget-warning">⚠️ Pengeluaran melebihi batas anggaran!</div>
+        </div>
+
         <!-- Form Tambah Transaksi -->
         <div class="form-control">
             <label for="keterangan">Keterangan Transaksi</label>
-            <input type="text" id="keterangan" placeholder="Contoh: Gaji, Beli Makanan...">
+            <input type="text" id="keterangan" placeholder="Contoh: Beli Kopi, Gaji Bulanan...">
         </div>
 
         <div class="form-control">
@@ -277,46 +366,102 @@
         </div>
 
         <div class="form-control">
+            <label for="jenis" onchange="updateKategoriOptions()">Jenis Transaksi</label>
+            <select id="jenis" onchange="updateKategoriOptions()">
+                <option value="pemasukan">Pemasukan (+)</option>
+                <option value="pengeluaran" selected>Pengeluaran (-)</option>
+            </select>
+        </div>
+
+        <div class="form-control">
+            <label for="kategori">Kategori</label>
+            <select id="kategori">
+                <!-- Diisi otomatis via JS -->
+            </select>
+        </div>
+
+        <div class="form-control">
             <label for="tanggal">Tanggal</label>
             <input type="date" id="tanggal">
         </div>
 
-        <div class="form-control">
-            <label for="jenis">Jenis Transaksi</label>
-            <select id="jenis">
-                <option value="pemasukan">Pemasukan (+)</option>
-                <option value="pengeluaran">Pengeluaran (-)</option>
-            </select>
-        </div>
-
         <button class="btn-submit" onclick="tambahTransaksi()">Tambah Transaksi</button>
 
-        <!-- Daftar Riwayat & Filter -->
+        <!-- Search & Filter -->
         <div class="history-header">
-            <h3 class="section-title">Riwayat</h3>
-            <select id="filterJenis" class="filter-select" onchange="updateTampilan()">
-                <option value="semua">Semua</option>
-                <option value="pemasukan">Pemasukan Saja</option>
-                <option value="pengeluaran">Pengeluaran Saja</option>
-            </select>
+            <h3 class="section-title">Riwayat Transaksi</h3>
+            <div class="search-filter-row">
+                <input type="text" id="searchInput" placeholder="🔍 Cari..." oninput="updateTampilan()">
+                <select id="filterJenis" style="width: 140px;" onchange="updateTampilan()">
+                    <option value="semua">Semua</option>
+                    <option value="pemasukan">Pemasukan</option>
+                    <option value="pengeluaran">Pengeluaran</option>
+                </select>
+            </div>
         </div>
 
         <ul id="daftarTransaksi">
             <!-- Data transaksi muncul di sini -->
         </ul>
 
+        <!-- Backup, Restore, dan Reset -->
+        <div class="backup-group">
+            <button class="btn-action" onclick="eksporData()">📥 Backup Data</button>
+            <button class="btn-action" onclick="document.getElementById('fileImport').click()">📤 Restore Data</button>
+            <input type="file" id="fileImport" style="display: none;" accept=".json" onchange="imporData(event)">
+        </div>
+
         <button class="btn-reset" onclick="resetSemuaData()">🗑️ Hapus Semua Riwayat</button>
     </div>
 
     <script>
         let transaksi = JSON.parse(localStorage.getItem('transaksiKeuangan')) || [];
+        let limitAnggaran = parseFloat(localStorage.getItem('limitAnggaranKeuangan')) || 0;
         let myChart = null;
+
+        const opsiKategori = {
+            pemasukan: [
+                { nama: 'Gaji', emoji: '💵' },
+                { nama: 'Bonus', emoji: '🎁' },
+                { nama: 'Investasi', emoji: '📈' },
+                { nama: 'Lain-lain', emoji: '💰' }
+            ],
+            pengeluaran: [
+                { nama: 'Makanan', emoji: '🍔' },
+                { nama: 'Transportasi', emoji: '⛽' },
+                { nama: 'Tagihan', emoji: '🧾' },
+                { nama: 'Belanja', emoji: '🛍️' },
+                { nama: 'Hiburan', emoji: '🎬' },
+                { nama: 'Lain-lain', emoji: '💸' }
+            ]
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tanggal').valueAsDate = new Date();
+            updateKategoriOptions();
             inisialisasiGrafik();
             updateTampilan();
+
+            // PWA Registration
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('Service Worker Aktif!'))
+                    .catch((err) => console.log('Gagal SW:', err));
+            }
         });
+
+        function updateKategoriOptions() {
+            let jenis = document.getElementById('jenis').value;
+            let kategoriSelect = document.getElementById('kategori');
+            kategoriSelect.innerHTML = '';
+
+            opsiKategori[jenis].forEach(kat => {
+                let opt = document.createElement('option');
+                opt.value = kat.nama;
+                opt.textContent = `${kat.emoji} ${kat.nama}`;
+                kategoriSelect.appendChild(opt);
+            });
+        }
 
         function formatRupiah(angka) {
             return 'Rp ' + angka.toLocaleString('id-ID');
@@ -328,7 +473,6 @@
             return `${bagian[2]}/${bagian[1]}/${bagian[0]}`;
         }
 
-        // Setup awal Grafik menggunakan Chart.js
         function inisialisasiGrafik() {
             let ctx = document.getElementById('grafikKeuangan').getContext('2d');
             myChart = new Chart(ctx, {
@@ -347,10 +491,7 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                font: { size: 11 }
-                            }
+                            labels: { boxWidth: 10, font: { size: 10 } }
                         }
                     }
                 }
@@ -362,14 +503,16 @@
             let jumInput = document.getElementById('jumlah');
             let tglInput = document.getElementById('tanggal');
             let jenisInput = document.getElementById('jenis');
+            let katInput = document.getElementById('kategori');
 
             let ket = ketInput.value.trim();
             let jum = parseFloat(jumInput.value);
             let tgl = tglInput.value;
             let jenis = jenisInput.value;
+            let kategori = katInput.value;
 
             if (ket === '' || isNaN(jum) || jum <= 0 || tgl === '') {
-                alert('Mohon isi keterangan, nominal, dan tanggal dengan benar!');
+                alert('Mohon isi semua data dengan benar!');
                 return;
             }
 
@@ -378,7 +521,8 @@
                 keterangan: ket,
                 jumlah: jum,
                 tanggal: tgl,
-                jenis: jenis
+                jenis: jenis,
+                kategori: kategori
             };
 
             transaksi.push(itemTransaksi);
@@ -401,6 +545,16 @@
             }
         }
 
+        function aturBatasAnggaran() {
+            let inputLimit = prompt('Masukkan Batas Maksimal Pengeluaran (Rp):', limitAnggaran || 1000000);
+            if (inputLimit !== null) {
+                let val = parseFloat(inputLimit);
+                limitAnggaran = isNaN(val) ? 0 : val;
+                localStorage.setItem('limitAnggaranKeuangan', limitAnggaran);
+                updateTampilan();
+            }
+        }
+
         function simpanDanUpdate() {
             localStorage.setItem('transaksiKeuangan', JSON.stringify(transaksi));
             updateTampilan();
@@ -409,6 +563,8 @@
         function updateTampilan() {
             let listEl = document.getElementById('daftarTransaksi');
             let filterVal = document.getElementById('filterJenis').value;
+            let searchVal = document.getElementById('searchInput').value.toLowerCase();
+
             listEl.innerHTML = '';
 
             let totalPemasukan = 0;
@@ -423,9 +579,14 @@
                     totalPengeluaran += t.jumlah;
                 }
 
-                if (filterVal !== 'semua' && t.jenis !== filterVal) {
-                    return;
-                }
+                // Filter jenis & Pencarian
+                if (filterVal !== 'semua' && t.jenis !== filterVal) return;
+                if (searchVal && !t.keterangan.toLowerCase().includes(searchVal) && !(t.kategori || '').toLowerCase().includes(searchVal)) return;
+
+                // Cari emoji kategori
+                let katList = opsiKategori[t.jenis] || [];
+                let matchKat = katList.find(k => k.nama === t.kategori);
+                let emoji = matchKat ? matchKat.emoji : (t.jenis === 'pemasukan' ? '💰' : '💸');
 
                 let li = document.createElement('li');
                 li.classList.add(t.jenis === 'pemasukan' ? 'plus' : 'minus');
@@ -433,8 +594,11 @@
 
                 li.innerHTML = `
                     <div class="trans-info">
-                        <span>${t.keterangan}</span>
-                        <small>📅 ${formatTanggal(t.tanggal)}</small>
+                        <span class="trans-icon">${emoji}</span>
+                        <div class="trans-details">
+                            <span>${t.keterangan}</span>
+                            <small>📅 ${formatTanggal(t.tanggal)} • ${t.kategori || 'Umum'}</small>
+                        </div>
                     </div>
                     <div class="trans-right">
                         <strong>${simbol}${formatRupiah(t.jumlah)}</strong>
@@ -451,11 +615,77 @@
             document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
             document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
 
-            // Update data grafik lingkaran
+            // Update Grafik
             if (myChart) {
                 myChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
                 myChart.update();
             }
+
+            // Update Batas Anggaran
+            let textBatas = document.getElementById('labelTextBatas');
+            let budgetBar = document.getElementById('budgetBar');
+            let budgetWarning = document.getElementById('budgetWarning');
+
+            if (limitAnggaran > 0) {
+                textBatas.innerText = `Limit: ${formatRupiah(limitAnggaran)}`;
+                let persen = Math.min((totalPengeluaran / limitAnggaran) * 100, 100);
+                budgetBar.style.width = persen + '%';
+
+                if (totalPengeluaran > limitAnggaran) {
+                    budgetBar.style.backgroundColor = '#e74c3c';
+                    budgetWarning.style.display = 'block';
+                } else if (persen > 80) {
+                    budgetBar.style.backgroundColor = '#f39c12';
+                    budgetWarning.style.display = 'none';
+                } else {
+                    budgetBar.style.backgroundColor = '#2ecc71';
+                    budgetWarning.style.display = 'none';
+                }
+            } else {
+                textBatas.innerText = 'Atur Limit';
+                budgetBar.style.width = '0%';
+                budgetWarning.style.display = 'none';
+            }
+        }
+
+        // Ekspor / Backup Data ke File .json
+        function eksporData() {
+            if (transaksi.length === 0) {
+                alert('Tidak ada data transaksi untuk di-backup!');
+                return;
+            }
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transaksi));
+            let downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Impor / Restore Data dari File .json
+        function imporData(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    let importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        if (confirm('Apakah Anda yakin ingin mengganti riwayat dengan data dari file ini?')) {
+                            transaksi = importedData;
+                            simpanDanUpdate();
+                            alert('Data berhasil dipulihkan!');
+                        }
+                    } else {
+                        alert('Format file tidak valid!');
+                    }
+                } catch (err) {
+                    alert('Gagal membaca file JSON!');
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 
