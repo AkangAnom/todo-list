@@ -270,15 +270,15 @@
             font-size: 13px;
         }
 
-        /* Group Tombol Ekspor/Impor & Reset */
+        /* Group Tombol Laporan & Backup */
         .backup-group {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-top: 15px;
         }
 
         .btn-action {
-            flex: 1;
             padding: 8px;
             background-color: #f0f3f4;
             color: #34495e;
@@ -308,6 +308,33 @@
 
         .btn-reset:hover {
             background-color: #fdf0f0;
+        }
+
+        /* Sembunyikan elemen yang tidak perlu saat mode cetak/PDF */
+        @media print {
+            body {
+                background-color: #fff;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .form-control,
+            .btn-submit,
+            .backup-group,
+            .btn-reset,
+            .delete-btn,
+            .search-filter-row,
+            #labelTextBatas {
+                display: none !important;
+            }
+
+            ul {
+                max-height: none;
+            }
         }
     </style>
 </head>
@@ -366,7 +393,7 @@
         </div>
 
         <div class="form-control">
-            <label for="jenis" onchange="updateKategoriOptions()">Jenis Transaksi</label>
+            <label for="jenis">Jenis Transaksi</label>
             <select id="jenis" onchange="updateKategoriOptions()">
                 <option value="pemasukan">Pemasukan (+)</option>
                 <option value="pengeluaran" selected>Pengeluaran (-)</option>
@@ -404,8 +431,10 @@
             <!-- Data transaksi muncul di sini -->
         </ul>
 
-        <!-- Backup, Restore, dan Reset -->
+        <!-- Laporan & Backup -->
         <div class="backup-group">
+            <button class="btn-action" onclick="eksporCSV()">📊 Export Excel/CSV</button>
+            <button class="btn-action" onclick="cetakLaporan()">🖨️ Cetak / Simpan PDF</button>
             <button class="btn-action" onclick="eksporData()">📥 Backup Data</button>
             <button class="btn-action" onclick="document.getElementById('fileImport').click()">📤 Restore Data</button>
             <input type="file" id="fileImport" style="display: none;" accept=".json" onchange="imporData(event)">
@@ -442,7 +471,6 @@
             inisialisasiGrafik();
             updateTampilan();
 
-            // PWA Registration
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
                     .then(() => console.log('Service Worker Aktif!'))
@@ -579,11 +607,9 @@
                     totalPengeluaran += t.jumlah;
                 }
 
-                // Filter jenis & Pencarian
                 if (filterVal !== 'semua' && t.jenis !== filterVal) return;
                 if (searchVal && !t.keterangan.toLowerCase().includes(searchVal) && !(t.kategori || '').toLowerCase().includes(searchVal)) return;
 
-                // Cari emoji kategori
                 let katList = opsiKategori[t.jenis] || [];
                 let matchKat = katList.find(k => k.nama === t.kategori);
                 let emoji = matchKat ? matchKat.emoji : (t.jenis === 'pemasukan' ? '💰' : '💸');
@@ -615,13 +641,11 @@
             document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
             document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
 
-            // Update Grafik
             if (myChart) {
                 myChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
                 myChart.update();
             }
 
-            // Update Batas Anggaran
             let textBatas = document.getElementById('labelTextBatas');
             let budgetBar = document.getElementById('budgetBar');
             let budgetWarning = document.getElementById('budgetWarning');
@@ -648,7 +672,36 @@
             }
         }
 
-        // Ekspor / Backup Data ke File .json
+        // Fitur Laporan CSV untuk Excel
+        function eksporCSV() {
+            if (transaksi.length === 0) {
+                alert('Belum ada transaksi untuk diunduh!');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Tanggal,Keterangan,Kategori,Jenis,Nominal (Rp)\n";
+            transaksi.forEach(t => {
+                csvContent += `"${t.tanggal}","${t.keterangan}","${t.kategori || 'Umum'}","${t.jenis}",${t.jumlah}\n`;
+            });
+
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Laporan_Keuangan_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        // Fitur Cetak / Simpan PDF
+        function cetakLaporan() {
+            if (transaksi.length === 0) {
+                alert('Belum ada data untuk dicetak!');
+                return;
+            }
+            window.print();
+        }
+
         function eksporData() {
             if (transaksi.length === 0) {
                 alert('Tidak ada data transaksi untuk di-backup!');
@@ -663,7 +716,6 @@
             downloadAnchor.remove();
         }
 
-        // Impor / Restore Data dari File .json
         function imporData(event) {
             let file = event.target.files[0];
             if (!file) return;
