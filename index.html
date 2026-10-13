@@ -310,7 +310,6 @@
             background-color: #fdf0f0;
         }
 
-        /* Sembunyikan elemen yang tidak perlu saat mode cetak/PDF */
         @media print {
             body {
                 background-color: #fff;
@@ -508,7 +507,7 @@
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
-                        data: [0, 0],
+                        data: [1, 1], // Nilai dummy awal agar lingkaran selalu tergambar
                         backgroundColor: ['#2ecc71', '#e74c3c'],
                         borderWidth: 2
                     }]
@@ -641,8 +640,15 @@
             document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
             document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
 
+            // Tampilkan data riil jika ada, atau tampilkan dummy netral jika masih Rp 0
             if (myChart) {
-                myChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
+                if (totalPemasukan === 0 && totalPengeluaran === 0) {
+                    myChart.data.datasets[0].data = [1, 1];
+                    myChart.data.datasets[0].backgroundColor = ['#e0e0e0', '#bdc3c7'];
+                } else {
+                    myChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
+                    myChart.data.datasets[0].backgroundColor = ['#2ecc71', '#e74c3c'];
+                }
                 myChart.update();
             }
 
@@ -672,7 +678,6 @@
             }
         }
 
-        // Fitur Laporan CSV untuk Excel
         function eksporCSV() {
             if (transaksi.length === 0) {
                 alert('Belum ada transaksi untuk diunduh!');
@@ -693,7 +698,6 @@
             link.remove();
         }
 
-        // Fitur Cetak / Simpan PDF
         function cetakLaporan() {
             if (transaksi.length === 0) {
                 alert('Belum ada data untuk dicetak!');
