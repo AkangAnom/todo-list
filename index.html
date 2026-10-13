@@ -75,7 +75,7 @@
         }
 
         .money {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             margin-top: 5px;
         }
@@ -98,11 +98,12 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #34495e;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         input[type="text"],
         input[type="number"],
+        input[type="date"],
         select {
             width: 100%;
             padding: 10px;
@@ -122,28 +123,44 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 15px;
-            margin-top: 10px;
+            margin-top: 5px;
+            transition: background 0.2s;
         }
 
         .btn-submit:hover {
             background-color: #2980b9;
         }
 
-        /* Riwayat Transaksi */
-        h3.section-title {
-            color: #2c3e50;
+        /* Filter & Header Riwayat */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-top: 25px;
             margin-bottom: 10px;
             border-bottom: 2px solid #ecf0f1;
             padding-bottom: 5px;
+        }
+
+        h3.section-title {
+            color: #2c3e50;
+            margin: 0;
             font-size: 16px;
+        }
+
+        .filter-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+            outline: none;
         }
 
         ul {
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
         }
 
@@ -166,17 +183,47 @@
             border-right-color: #e74c3c;
         }
 
+        .trans-info small {
+            display: block;
+            color: #7f8c8d;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .trans-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .delete-btn {
             background: none;
             border: none;
             color: #e74c3c;
             cursor: pointer;
-            font-size: 16px;
-            margin-left: 10px;
+            font-size: 14px;
         }
 
         .delete-btn:hover {
             color: #c0392b;
+        }
+
+        /* Tombol Reset Data */
+        .btn-reset {
+            width: 100%;
+            padding: 8px;
+            background-color: transparent;
+            color: #e74c3c;
+            border: 1px dashed #e74c3c;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:hover {
+            background-color: #fdf0f0;
         }
     </style>
 </head>
@@ -206,12 +253,17 @@
         <!-- Form Tambah Transaksi -->
         <div class="form-control">
             <label for="keterangan">Keterangan Transaksi</label>
-            <input type="text" id="keterangan" placeholder="Contoh: Gaji, Beli Kopi...">
+            <input type="text" id="keterangan" placeholder="Contoh: Gaji Bulanan, Beli Makan...">
         </div>
 
         <div class="form-control">
             <label for="jumlah">Jumlah (Rp)</label>
             <input type="number" id="jumlah" placeholder="Contoh: 50000">
+        </div>
+
+        <div class="form-control">
+            <label for="tanggal">Tanggal</label>
+            <input type="date" id="tanggal">
         </div>
 
         <div class="form-control">
@@ -224,36 +276,55 @@
 
         <button class="btn-submit" onclick="tambahTransaksi()">Tambah Transaksi</button>
 
-        <!-- Daftar Riwayat Transaksi -->
-        <h3 class="section-title">Riwayat Transaksi</h3>
+        <!-- Daftar Riwayat Transaksi & Filter -->
+        <div class="history-header">
+            <h3 class="section-title">Riwayat</h3>
+            <select id="filterJenis" class="filter-select" onchange="updateTampilan()">
+                <option value="semua">Semua</option>
+                <option value="pemasukan">Pemasukan Saja</option>
+                <option value="pengeluaran">Pengeluaran Saja</option>
+            </select>
+        </div>
+
         <ul id="daftarTransaksi">
-            <!-- Data transaksi akan muncul di sini secara dinamis -->
+            <!-- Data transaksi akan muncul di sini -->
         </ul>
+
+        <button class="btn-reset" onclick="resetSemuaData()">🗑️ Hapus Semua Riwayat</button>
     </div>
 
     <script>
-        // Ambil data transaksi dari LocalStorage jika ada
         let transaksi = JSON.parse(localStorage.getItem('transaksiKeuangan')) || [];
 
-        // Inisialisasi tampilan awal
-        document.addEventListener('DOMContentLoaded', updateTampilan);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set tanggal default ke hari ini
+            document.getElementById('tanggal').valueAsDate = new Date();
+            updateTampilan();
+        });
 
-        // Format angka ke mata uang Rupiah
         function formatRupiah(angka) {
             return 'Rp ' + angka.toLocaleString('id-ID');
+        }
+
+        function formatTanggal(tglStr) {
+            if (!tglStr) return '';
+            let bagian = tglStr.split('-');
+            return `${bagian[2]}/${bagian[1]}/${bagian[0]}`;
         }
 
         function tambahTransaksi() {
             let ketInput = document.getElementById('keterangan');
             let jumInput = document.getElementById('jumlah');
+            let tglInput = document.getElementById('tanggal');
             let jenisInput = document.getElementById('jenis');
 
             let ket = ketInput.value.trim();
             let jum = parseFloat(jumInput.value);
+            let tgl = tglInput.value;
             let jenis = jenisInput.value;
 
-            if (ket === '' || isNaN(jum) || jum <= 0) {
-                alert('Silakan masukkan keterangan dan jumlah nominal yang benar!');
+            if (ket === '' || isNaN(jum) || jum <= 0 || tgl === '') {
+                alert('Mohon isi keterangan, nominal, dan tanggal dengan benar!');
                 return;
             }
 
@@ -261,20 +332,29 @@
                 id: Date.now(),
                 keterangan: ket,
                 jumlah: jum,
+                tanggal: tgl,
                 jenis: jenis
             };
 
             transaksi.push(itemTransaksi);
             simpanDanUpdate();
 
-            // Kosongkan input
+            // Reset form input (kecuali tanggal tetap hari ini)
             ketInput.value = '';
             jumInput.value = '';
+            tglInput.valueAsDate = new Date();
         }
 
         function hapusTransaksi(id) {
             transaksi = transaksi.filter(t => t.id !== id);
             simpanDanUpdate();
+        }
+
+        function resetSemuaData() {
+            if (confirm('Yakin ingin menghapus seluruh riwayat catatan keuangan?')) {
+                transaksi = [];
+                simpanDanUpdate();
+            }
         }
 
         function simpanDanUpdate() {
@@ -284,32 +364,44 @@
 
         function updateTampilan() {
             let listEl = document.getElementById('daftarTransaksi');
+            let filterVal = document.getElementById('filterJenis').value;
             listEl.innerHTML = '';
 
             let totalPemasukan = 0;
             let totalPengeluaran = 0;
 
-            transaksi.forEach(t => {
+            // Urutkan dari yang terbaru
+            let transaksiUrut = [...transaksi].reverse();
+
+            transaksiUrut.forEach(t => {
+                // Hitung total keseluruhan untuk saldo
+                if (t.jenis === 'pemasukan') {
+                    totalPemasukan += t.jumlah;
+                } else {
+                    totalPengeluaran += t.jumlah;
+                }
+
+                // Filter tampilan riwayat
+                if (filterVal !== 'semua' && t.jenis !== filterVal) {
+                    return;
+                }
+
                 let li = document.createElement('li');
                 li.classList.add(t.jenis === 'pemasukan' ? 'plus' : 'minus');
-
                 let simbol = t.jenis === 'pemasukan' ? '+' : '-';
 
                 li.innerHTML = `
-                    <span>${t.keterangan}</span>
-                    <div>
+                    <div class="trans-info">
+                        <span>${t.keterangan}</span>
+                        <small>📅 ${formatTanggal(t.tanggal)}</small>
+                    </div>
+                    <div class="trans-right">
                         <strong>${simbol}${formatRupiah(t.jumlah)}</strong>
                         <button class="delete-btn" onclick="hapusTransaksi(${t.id})" title="Hapus">❌</button>
                     </div>
                 `;
 
                 listEl.appendChild(li);
-
-                if (t.jenis === 'pemasukan') {
-                    totalPemasukan += t.jumlah;
-                } else {
-                    totalPengeluaran += t.jumlah;
-                }
             });
 
             let totalSaldo = totalPemasukan - totalPengeluaran;
