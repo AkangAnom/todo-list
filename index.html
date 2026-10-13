@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Keuangan Saya</title>
 
-    <!-- Konfigurasi PWA -->
+    <!-- Konfigurasi PWA (Nomor 3) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
 
@@ -470,10 +470,11 @@
             inisialisasiGrafik();
             updateTampilan();
 
+            // Pendaftaran Service Worker PWA
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
-                    .then(() => console.log('Service Worker Aktif!'))
-                    .catch((err) => console.log('Gagal SW:', err));
+                    .then(() => console.log('Service Worker PWA Berhasil Didaftarkan!'))
+                    .catch((err) => console.log('Gagal daftar Service Worker:', err));
             }
         });
 
@@ -507,7 +508,7 @@
                 data: {
                     labels: ['Pemasukan', 'Pengeluaran'],
                     datasets: [{
-                        data: [1, 1], // Nilai dummy awal agar lingkaran selalu tergambar
+                        data: [1, 1],
                         backgroundColor: ['#2ecc71', '#e74c3c'],
                         borderWidth: 2
                     }]
@@ -640,7 +641,6 @@
             document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
             document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
 
-            // Tampilkan data riil jika ada, atau tampilkan dummy netral jika masih Rp 0
             if (myChart) {
                 if (totalPemasukan === 0 && totalPengeluaran === 0) {
                     myChart.data.datasets[0].data = [1, 1];
