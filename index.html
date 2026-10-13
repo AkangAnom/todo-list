@@ -99,7 +99,7 @@
         <h2>📝 Catatan Tugas Saya</h2>
 
         <div class="input-group">
-            <input type="text" id="tugasInput" placeholder="Ketik tugas baru...">
+            <input type="text" id="tugasInput" placeholder="Ketik tugas baru..." onkeypress="cekEnter(event)">
             <button class="btn-add" onclick="tambahTugas()">Tambah</button>
         </div>
 
@@ -110,45 +110,86 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // Jalankan fungsi muat data saat halaman pertama kali dibuka
+        document.addEventListener("DOMContentLoaded", muatDariLocalStorage);
+
         function tambahTugas() {
-            // 1. Ambil teks dari kotak input
             let input = document.getElementById('tugasInput');
             let teksTugas = input.value.trim();
 
-            // Cek agar inputan tidak boleh kosong
             if (teksTugas === "") {
                 alert("Silakan ketik tugasnya terlebih dahulu!");
                 return;
             }
 
-            // 2. Buat elemen li (list item) baru secara dinamis
+            buatElemenTugas(teksTugas, false);
+            input.value = "";
+            simpanKeLocalStorage();
+        }
+
+        // Fitur tambahan: bisa tekan tombol 'Enter' untuk menambah tugas
+        function cekEnter(event) {
+            if (event.key === "Enter") {
+                tambahTugas();
+            }
+        }
+
+        // Fungsi pembantu untuk membuat elemen HTML tugas
+        function buatElemenTugas(teks, sudahSelesai) {
             let li = document.createElement('li');
+            if (sudahSelesai) {
+                li.classList.add('selesai');
+            }
 
             li.innerHTML = `
-                <span>${teksTugas}</span>
+                <span>${teks}</span>
                 <div class="actions">
                     <button onclick="tandaiSelesai(this)" title="Tandai Selesai">✅</button>
                     <button onclick="hapusTugas(this)" title="Hapus">❌</button>
                 </div>
             `;
 
-            // 3. Masukkan li baru ke dalam ul (daftarTugas)
             document.getElementById('daftarTugas').appendChild(li);
-
-            // 4. Kosongkan kembali kotak input
-            input.value = "";
         }
 
-        // Fungsi untuk menandai tugas selesai (mencoret teks)
+        // Fungsi untuk menandai tugas selesai
         function tandaiSelesai(tombol) {
             let itemLi = tombol.parentElement.parentElement;
             itemLi.classList.toggle('selesai');
+            simpanKeLocalStorage();
         }
 
-        // Fungsi untuk menghapus tugas dari daftar
+        // Fungsi untuk menghapus tugas
         function hapusTugas(tombol) {
             let itemLi = tombol.parentElement.parentElement;
             itemLi.remove();
+            simpanKeLocalStorage();
+        }
+
+        // Menyimpan data ke LocalStorage browser
+        function simpanKeLocalStorage() {
+            let listTugas = [];
+            let itemLi = document.querySelectorAll('#daftarTugas li');
+
+            itemLi.forEach(function (li) {
+                listTugas.push({
+                    teks: li.querySelector('span').textContent,
+                    selesai: li.classList.contains('selesai')
+                });
+            });
+
+            localStorage.setItem('tugasSaya', JSON.stringify(listTugas));
+        }
+
+        // Mengambil data dari LocalStorage saat halaman dimuat
+        function muatDariLocalStorage() {
+            let dataTersimpan = localStorage.getItem('tugasSaya');
+            if (dataTersimpan) {
+                let listTugas = JSON.parse(dataTersimpan);
+                listTugas.forEach(function (tugas) {
+                    buatElemenTugas(tugas.teks, tugas.selesai);
+                });
+            }
         }
     </script>
 
