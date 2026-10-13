@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Keuangan Saya</title>
 
+    <!-- Load Chart.js dari CDN resmi -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -37,6 +40,14 @@
             text-align: center;
         }
 
+        /* Area Grafik */
+        .chart-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 15px auto;
+        }
+
         /* Ringkasan Saldo */
         .summary-box {
             background-color: #2c3e50;
@@ -49,14 +60,14 @@
 
         .summary-box h3 {
             margin: 0 0 5px 0;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #bdc3c7;
         }
 
         .summary-box .balance {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: bold;
             margin: 0;
         }
@@ -64,8 +75,8 @@
         .inc-exp-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -75,9 +86,9 @@
         }
 
         .money {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
         .money.plus {
@@ -160,7 +171,7 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 220px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -208,7 +219,6 @@
             color: #c0392b;
         }
 
-        /* Tombol Reset Data */
         .btn-reset {
             width: 100%;
             padding: 8px;
@@ -233,6 +243,11 @@
     <div class="container">
         <h2>💰 Pencatatan Keuangan</h2>
 
+        <!-- Diagram Grafik Lingkaran -->
+        <div class="chart-container">
+            <canvas id="grafikKeuangan"></canvas>
+        </div>
+
         <!-- Ringkasan Saldo -->
         <div class="summary-box">
             <h3>Total Saldo</h3>
@@ -253,7 +268,7 @@
         <!-- Form Tambah Transaksi -->
         <div class="form-control">
             <label for="keterangan">Keterangan Transaksi</label>
-            <input type="text" id="keterangan" placeholder="Contoh: Gaji Bulanan, Beli Makan...">
+            <input type="text" id="keterangan" placeholder="Contoh: Gaji, Beli Makanan...">
         </div>
 
         <div class="form-control">
@@ -276,7 +291,7 @@
 
         <button class="btn-submit" onclick="tambahTransaksi()">Tambah Transaksi</button>
 
-        <!-- Daftar Riwayat Transaksi & Filter -->
+        <!-- Daftar Riwayat & Filter -->
         <div class="history-header">
             <h3 class="section-title">Riwayat</h3>
             <select id="filterJenis" class="filter-select" onchange="updateTampilan()">
@@ -287,7 +302,7 @@
         </div>
 
         <ul id="daftarTransaksi">
-            <!-- Data transaksi akan muncul di sini -->
+            <!-- Data transaksi muncul di sini -->
         </ul>
 
         <button class="btn-reset" onclick="resetSemuaData()">🗑️ Hapus Semua Riwayat</button>
@@ -295,10 +310,11 @@
 
     <script>
         let transaksi = JSON.parse(localStorage.getItem('transaksiKeuangan')) || [];
+        let myChart = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Set tanggal default ke hari ini
             document.getElementById('tanggal').valueAsDate = new Date();
+            inisialisasiGrafik();
             updateTampilan();
         });
 
@@ -310,6 +326,35 @@
             if (!tglStr) return '';
             let bagian = tglStr.split('-');
             return `${bagian[2]}/${bagian[1]}/${bagian[0]}`;
+        }
+
+        // Setup awal Grafik menggunakan Chart.js
+        function inisialisasiGrafik() {
+            let ctx = document.getElementById('grafikKeuangan').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function tambahTransaksi() {
@@ -339,7 +384,6 @@
             transaksi.push(itemTransaksi);
             simpanDanUpdate();
 
-            // Reset form input (kecuali tanggal tetap hari ini)
             ketInput.value = '';
             jumInput.value = '';
             tglInput.valueAsDate = new Date();
@@ -370,18 +414,15 @@
             let totalPemasukan = 0;
             let totalPengeluaran = 0;
 
-            // Urutkan dari yang terbaru
             let transaksiUrut = [...transaksi].reverse();
 
             transaksiUrut.forEach(t => {
-                // Hitung total keseluruhan untuk saldo
                 if (t.jenis === 'pemasukan') {
                     totalPemasukan += t.jumlah;
                 } else {
                     totalPengeluaran += t.jumlah;
                 }
 
-                // Filter tampilan riwayat
                 if (filterVal !== 'semua' && t.jenis !== filterVal) {
                     return;
                 }
@@ -409,6 +450,12 @@
             document.getElementById('saldo').innerText = formatRupiah(totalSaldo);
             document.getElementById('pemasukan').innerText = '+' + formatRupiah(totalPemasukan);
             document.getElementById('pengeluaran').innerText = '-' + formatRupiah(totalPengeluaran);
+
+            // Update data grafik lingkaran
+            if (myChart) {
+                myChart.data.datasets[0].data = [totalPemasukan, totalPengeluaran];
+                myChart.update();
+            }
         }
     </script>
 
